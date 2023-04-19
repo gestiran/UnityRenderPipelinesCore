@@ -253,13 +253,34 @@ namespace UnityEngine.Rendering {
         static IEnumerable<Type> m_AssemblyTypes;
 
         public static IEnumerable<Type> GetAllTypesDerivedFrom<T>() {
-        #if UNITY_EDITOR && UNITY_2019_2_OR_NEWER
+        #if UNITY_EDITOR
             return UnityEditor.TypeCache.GetTypesDerivedFrom<T>();
         #else
             return GetAllAssemblyTypes().Where(t => t.IsSubclassOf(typeof(T)));
         #endif
         }
 
+        public static IEnumerable<Type> GetAllAssemblyTypes()
+        {
+            if (m_AssemblyTypes == null)
+            {
+                m_AssemblyTypes = AppDomain.CurrentDomain.GetAssemblies()
+                                           .SelectMany(t =>
+                                                       {
+                                                           // Ugly hack to handle mis-versioned dlls
+                                                           var innerTypes = new Type[0];
+                                                           try
+                                                           {
+                                                               innerTypes = t.GetTypes();
+                                                           }
+                                                           catch { }
+                                                           return innerTypes;
+                                                       });
+            }
+
+            return m_AssemblyTypes;
+        }
+        
         /// <summary>
         /// Safely release a Compute Buffer.
         /// </summary>
