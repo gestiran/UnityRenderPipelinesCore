@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Chunk = UnityEngine.Experimental.Rendering.ProbeBrickPool.BrickChunkAlloc;
 using Brick = UnityEngine.Experimental.Rendering.ProbeBrickIndex.Brick;
@@ -43,116 +42,6 @@ namespace UnityEngine.Experimental.Rendering
         private static List<SphericalHarmonicsL2> m_SHCoefficients = new List<SphericalHarmonicsL2>();
         private static List<Vector3> m_RequestPositions = new List<Vector3>();
         private static int m_FreelistHead = -1;
-
-        private static readonly Vector2 s_FreelistSentinel = new Vector2(float.MaxValue, float.MaxValue);
-
-        /// <summary>
-        /// Enqueue a request for probe rendering at the specified location.
-        /// </summary>
-        /// <param name ="capturePosition"> The position at which a probe is baked.</param>
-        /// <returns>An ID that can be used to retrieve the data once it has been computed</returns>
-        public int EnqueueRequest(Vector3 capturePosition)
-        {
-            Debug.Assert(ComputeCapturePositionIsValid(capturePosition));
-
-            if (m_FreelistHead >= 0)
-            {
-                int requestID = m_FreelistHead;
-                Debug.Assert(requestID < m_RequestPositions.Count);
-                m_FreelistHead = ComputeFreelistNext(m_RequestPositions[requestID]);
-                m_RequestPositions[requestID] = capturePosition;
-                m_SHCoefficients[requestID] = new SphericalHarmonicsL2();
-                return requestID;
-            }
-            else
-            {
-                int requestID = m_RequestPositions.Count;
-                m_RequestPositions.Add(capturePosition);
-                m_SHCoefficients.Add(new SphericalHarmonicsL2());
-                return requestID;
-            }
-        }
-
-        /// <summary>
-        /// Enqueue a request for probe rendering at the specified location.
-        /// </summary>
-        /// <param name ="requestID"> An ID that can be used to retrieve the data once it has been computed</param>
-        /// <returns>An ID that can be used to retrieve the data once it has been computed</returns>
-        public void DequeueRequest(int requestID)
-        {
-            Debug.Assert(requestID >= 0 && requestID < m_RequestPositions.Count);
-
-            m_RequestPositions[requestID] = new Vector3(s_FreelistSentinel.x, s_FreelistSentinel.y, m_FreelistHead);
-            m_SHCoefficients[requestID] = new SphericalHarmonicsL2();
-            m_FreelistHead = requestID;
-        }
-
-        private bool ComputeCapturePositionIsValid(Vector3 capturePosition)
-        {
-            return !((capturePosition.x == s_FreelistSentinel.x) && (capturePosition.y == s_FreelistSentinel.y));
-        }
-
-        private int ComputeFreelistNext(Vector3 capturePosition)
-        {
-            Debug.Assert(ComputeRequestIsFree(capturePosition));
-
-            int freelistNext = (int)capturePosition.z;
-            Debug.Assert(freelistNext >= -1 && freelistNext < m_RequestPositions.Count);
-            return freelistNext;
-        }
-
-        private bool ComputeRequestIsFree(int requestID)
-        {
-            Debug.Assert(requestID >= 0 && requestID < m_RequestPositions.Count);
-            Vector3 requestPosition = m_RequestPositions[requestID];
-            return ComputeRequestIsFree(requestPosition);
-        }
-
-        private bool ComputeRequestIsFree(Vector3 capturePosition)
-        {
-            return (capturePosition.x == s_FreelistSentinel.x) && (capturePosition.y == s_FreelistSentinel.y);
-        }
-
-        /// <summary>
-        /// Retrieve the result of a capture request, it will return false if the request has not been fulfilled yet or the request ID is invalid.
-        /// </summary>
-        /// <param name ="requestID"> The request ID that has been given by the manager through a previous EnqueueRequest.</param>
-        /// <param name ="sh"> The output SH coefficients that have been computed.</param>
-        /// <returns>Whether the request for light probe rendering has been fulfilled and sh is valid.</returns>
-        public bool RetrieveProbeSH(int requestID, out SphericalHarmonicsL2 sh)
-        {
-            if (requestID >= 0 && requestID < m_SHCoefficients.Count
-                && ComputeCapturePositionIsValid(m_RequestPositions[requestID]))
-            {
-                sh = m_SHCoefficients[requestID];
-                return true;
-            }
-            else
-            {
-                sh = new SphericalHarmonicsL2();
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Update the capture location for the probe request.
-        /// </summary>
-        /// <param name ="requestID"> The request ID that has been given by the manager through a previous EnqueueRequest.</param>
-        /// <param name ="newPositionnewPosition"> The position at which a probe is baked.</param>
-        public int UpdatePositionForRequest(int requestID, Vector3 newPosition)
-        {
-            if (requestID >= 0 && requestID < m_RequestPositions.Count)
-            {
-                Debug.Assert(ComputeCapturePositionIsValid(newPosition));
-                m_RequestPositions[requestID] = newPosition;
-                m_SHCoefficients[requestID] = new SphericalHarmonicsL2();
-                return requestID;
-            }
-            else
-            {
-                return EnqueueRequest(newPosition);
-            }
-        }
 
         private void SubscribeOnBakeStarted()
         {
@@ -201,7 +90,6 @@ namespace UnityEngine.Experimental.Rendering
 
         private void SetSHCoefficients(NativeArray<SphericalHarmonicsL2> sh)
         {
-            Debug.Assert(sh.Length == m_SHCoefficients.Count);
             for (int i = 0; i < sh.Length; ++i)
             {
                 m_SHCoefficients[i] = sh[i];
@@ -636,7 +524,6 @@ namespace UnityEngine.Experimental.Rendering
         {
             if (m_IsInitialized)
             {
-                Debug.LogError("Probe Volume System has already been initialized.");
                 return;
             }
 
@@ -691,7 +578,6 @@ namespace UnityEngine.Experimental.Rendering
 
             if (!m_IsInitialized)
             {
-                Debug.LogError("Probe Volume System has not been initialized first before calling cleanup.");
                 return;
             }
 
@@ -791,16 +677,12 @@ namespace UnityEngine.Experimental.Rendering
 
             if (!CheckCompatibilityWithCollection(asset, m_ActiveAssets))
             {
-                Debug.LogError($"Trying to load Probe Volume data for a scene that has been baked with different settings than currently loaded ones. " +
-                               $"Please make sure all loaded scenes are in the same baking set.");
                 return;
             }
 
             // If we don't have any loaded asset yet, we need to verify the other queued assets.
             if (!CheckCompatibilityWithCollection(asset, m_PendingAssetsToBeLoaded))
             {
-                Debug.LogError($"Trying to load Probe Volume data for a scene that has been baked with different settings from other scenes that are being loaded. " +
-                                $"Please make sure all loaded scenes are in the same baking set.");
                 return;
             }
 
@@ -908,7 +790,6 @@ namespace UnityEngine.Experimental.Rendering
         {
             if (asset.Version != (int)ProbeVolumeAsset.AssetVersion.Current)
             {
-                Debug.LogWarning($"Trying to load an asset {asset.GetSerializedFullPath()} that has been baked with a previous version of the system. Please re-bake the data.");
                 return;
             }
 
@@ -1098,7 +979,6 @@ namespace UnityEngine.Experimental.Rendering
             var maxCellPosition = m_PendingInitInfo.pendingMaxCellPosition;
             if (!m_ProbeReferenceVolumeInit)
             {
-                Profiler.BeginSample("Initialize Reference Volume");
                 m_Pool = new ProbeBrickPool(allocationSize, memoryBudget, shBands);
 
                 m_Index = new ProbeBrickIndex(memoryBudget);
@@ -1110,8 +990,6 @@ namespace UnityEngine.Experimental.Rendering
                 for (int i = 1; i < ProbeBrickPool.kBrickProbeCountPerDim - 1; i++)
                     m_PositionOffsets[i] = i * probeDelta;
                 m_PositionOffsets[m_PositionOffsets.Length - 1] = 1.0f;
-                Profiler.EndSample();
-
                 m_ProbeReferenceVolumeInit = true;
 
                 ClearDebugData();
@@ -1208,9 +1086,6 @@ namespace UnityEngine.Experimental.Rendering
         // Runtime API starts here
         RegId AddBricks(List<Brick> bricks, ProbeBrickPool.DataLocation dataloc, ProbeBrickIndex.CellIndexUpdateInfo cellUpdateInfo, out List<Chunk> ch_list)
         {
-            Profiler.BeginSample("AddBricks");
-
-            // calculate the number of chunks necessary
             int ch_size = m_Pool.GetChunkSize();
             ch_list = new List<Chunk>((bricks.Count + ch_size - 1) / ch_size);
             m_Pool.Allocate(ch_list.Capacity, ch_list);
@@ -1254,8 +1129,6 @@ namespace UnityEngine.Experimental.Rendering
             // Build index
             m_Index.AddBricks(id, bricks, ch_list, m_Pool.GetChunkSize(), m_Pool.GetPoolWidth(), m_Pool.GetPoolHeight(), cellUpdateInfo);
 
-            Profiler.EndSample();
-
             return id;
         }
 
@@ -1264,7 +1137,6 @@ namespace UnityEngine.Experimental.Rendering
             List<Chunk> ch_list;
             if (!m_Registry.TryGetValue(id, out ch_list))
             {
-                Debug.Log("Tried to release bricks with id=" + id.id + " but no bricks were registered under this id.");
                 return;
             }
 

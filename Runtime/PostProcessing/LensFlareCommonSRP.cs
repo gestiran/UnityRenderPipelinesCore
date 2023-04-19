@@ -111,9 +111,7 @@ namespace UnityEngine.Rendering
         /// </summary>
         /// <param name="newData">The new data added</param>
         public void AddData(LensFlareComponentSRP newData)
-        {
-            Debug.Assert(Instance == this, "LensFlareCommonSRP can have only one instance");
-
+        { 
             if (!m_Data.Contains(newData))
             {
                 m_Data.Add(newData);
@@ -1011,8 +1009,6 @@ namespace UnityEngine.Rendering
         /// <param name="data">The data which exist in the pool</param>
         public void RemoveData(LensFlareComponentSRP data)
         {
-            Debug.Assert(Instance == this, "LensFlareCommonSRP can have only one instance");
-
             if (m_Data.Contains(data))
             {
                 m_Data.Remove(data);

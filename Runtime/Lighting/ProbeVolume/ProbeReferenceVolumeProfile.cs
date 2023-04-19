@@ -57,12 +57,7 @@ namespace UnityEngine.Experimental.Rendering
                 // Migration code
             }
         }
-
-        /// <summary>
-        /// Determines if the Probe Reference Volume Profile is equivalent to another one.
-        /// </summary>
-        /// <param name ="otherProfile">The profile to compare with.</param>
-        /// <returns>Whether the Probe Reference Volume Profile is equivalent to another one.</returns>
+        
         public bool IsEquivalent(ProbeReferenceVolumeProfile otherProfile)
         {
             return minDistanceBetweenProbes == otherProfile.minDistanceBetweenProbes &&

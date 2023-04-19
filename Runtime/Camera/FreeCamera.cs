@@ -1,8 +1,3 @@
-#if ENABLE_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM_PACKAGE
-#define USE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,8 +31,7 @@ namespace UnityEngine.Rendering
         /// Scale factor of the turbo mode.
         /// </summary>
         public float m_Turbo = 10.0f;
-
-#if !USE_INPUT_SYSTEM
+        
         private static string kMouseX = "Mouse X";
         private static string kMouseY = "Mouse Y";
         private static string kRightStickX = "Controller Right Stick X";
@@ -47,15 +41,7 @@ namespace UnityEngine.Rendering
 
         private static string kYAxis = "YAxis";
         private static string kSpeedAxis = "Speed Axis";
-#endif
-
-#if USE_INPUT_SYSTEM
-        InputAction lookAction;
-        InputAction moveAction;
-        InputAction speedAction;
-        InputAction yMoveAction;
-#endif
-
+        
         void OnEnable()
         {
             RegisterInputs();
@@ -63,42 +49,8 @@ namespace UnityEngine.Rendering
 
         void RegisterInputs()
         {
-#if USE_INPUT_SYSTEM
-            var map = new InputActionMap("Free Camera");
-
-            lookAction = map.AddAction("look", binding: "<Mouse>/delta");
-            moveAction = map.AddAction("move", binding: "<Gamepad>/leftStick");
-            speedAction = map.AddAction("speed", binding: "<Gamepad>/dpad");
-            yMoveAction = map.AddAction("yMove");
-
-            lookAction.AddBinding("<Gamepad>/rightStick").WithProcessor("scaleVector2(x=15, y=15)");
-            moveAction.AddCompositeBinding("Dpad")
-                .With("Up", "<Keyboard>/w")
-                .With("Up", "<Keyboard>/upArrow")
-                .With("Down", "<Keyboard>/s")
-                .With("Down", "<Keyboard>/downArrow")
-                .With("Left", "<Keyboard>/a")
-                .With("Left", "<Keyboard>/leftArrow")
-                .With("Right", "<Keyboard>/d")
-                .With("Right", "<Keyboard>/rightArrow");
-            speedAction.AddCompositeBinding("Dpad")
-                .With("Up", "<Keyboard>/home")
-                .With("Down", "<Keyboard>/end");
-            yMoveAction.AddCompositeBinding("Dpad")
-                .With("Up", "<Keyboard>/pageUp")
-                .With("Down", "<Keyboard>/pageDown")
-                .With("Up", "<Keyboard>/e")
-                .With("Down", "<Keyboard>/q")
-                .With("Up", "<Gamepad>/rightshoulder")
-                .With("Down", "<Gamepad>/leftshoulder");
-
-            moveAction.Enable();
-            lookAction.Enable();
-            speedAction.Enable();
-            yMoveAction.Enable();
-#endif
-
-#if UNITY_EDITOR && !USE_INPUT_SYSTEM
+            
+#if UNITY_EDITOR
             List<InputManagerEntry> inputEntries = new List<InputManagerEntry>();
 
             // Add new bindings
@@ -127,21 +79,6 @@ namespace UnityEngine.Rendering
             leftShiftBoost = false;
             fire1 = false;
 
-#if USE_INPUT_SYSTEM
-            var lookDelta = lookAction.ReadValue<Vector2>();
-            inputRotateAxisX = lookDelta.x * m_LookSpeedMouse * k_MouseSensitivityMultiplier;
-            inputRotateAxisY = lookDelta.y * m_LookSpeedMouse * k_MouseSensitivityMultiplier;
-
-            leftShift = Keyboard.current?.leftShiftKey?.isPressed ?? false;
-            fire1 = Mouse.current?.leftButton?.isPressed == true || Gamepad.current?.xButton?.isPressed == true;
-
-            inputChangeSpeed = speedAction.ReadValue<Vector2>().y;
-
-            var moveDelta = moveAction.ReadValue<Vector2>();
-            inputVertical = moveDelta.y;
-            inputHorizontal = moveDelta.x;
-            inputYAxis = yMoveAction.ReadValue<Vector2>().y;
-#else
             if (Input.GetMouseButton(1))
             {
                 leftShiftBoost = true;
@@ -159,7 +96,6 @@ namespace UnityEngine.Rendering
             inputVertical = Input.GetAxis(kVertical);
             inputHorizontal = Input.GetAxis(kHorizontal);
             inputYAxis = Input.GetAxis(kYAxis);
-#endif
         }
 
         void Update()

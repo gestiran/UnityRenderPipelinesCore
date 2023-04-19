@@ -10,18 +10,12 @@ using System.Linq;
 
 namespace UnityEngine.Experimental.Rendering
 {
-    // Add Profile and baking settings.
-
-    /// <summary>
-    /// A class containing info about the bounds defined by the probe volumes in various scenes.
-    /// </summary>
     [System.Serializable]
     public class ProbeVolumeSceneData : ISerializationCallbackReceiver
     {
         static PropertyInfo s_SceneGUID = typeof(Scene).GetProperty("guid", System.Reflection.BindingFlags.NonPublic | BindingFlags.Instance);
         string GetSceneGUID(Scene scene)
         {
-            Debug.Assert(s_SceneGUID != null, "Reflection for scene GUID failed");
             return (string)s_SceneGUID.GetValue(scene);
         }
 
@@ -340,10 +334,6 @@ namespace UnityEngine.Experimental.Rendering
                 var profile = GetProfileForScene(scene);
                 if (profile == null)
                 {
-                    if (volumes.Length > 0)
-                    {
-                        Debug.LogWarning("A probe volume is present in the scene but a profile has not been set. Please configure a profile for your scene in the Probe Volume Baking settings.");
-                    }
                     return;
                 }
                 ProbeReferenceVolume.instance.SetMinBrickAndMaxSubdiv(profile.minBrickSize, profile.maxSubdivision);

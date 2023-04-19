@@ -26,10 +26,6 @@ namespace UnityEngine.Rendering
             : base(size, size, format, filterMode, true, name, useMipMap)
         {
             this.m_MipPadding = mipPadding;
-
-            // Check if size is a power of two
-            if ((size & (size - 1)) != 0)
-                Debug.Assert(false, "Power of two atlas was constructed with non power of two size: " + size);
         }
 
         /// <summary>
@@ -95,18 +91,15 @@ namespace UnityEngine.Rendering
             if (!blitMips)
                 mipCount = 1;
 
-            using (new ProfilingScope(cmd, ProfilingSampler.Get(CoreProfileId.BlitTextureInPotAtlas)))
+            for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
             {
-                for (int mipLevel = 0; mipLevel < mipCount; mipLevel++)
+                cmd.SetRenderTarget(m_AtlasTexture, mipLevel);
+                switch (blitType)
                 {
-                    cmd.SetRenderTarget(m_AtlasTexture, mipLevel);
-                    switch (blitType)
-                    {
-                        case BlitType.Padding: Blitter.BlitQuadWithPadding(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
-                        case BlitType.PaddingMultiply: Blitter.BlitQuadWithPaddingMultiply(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
-                        case BlitType.OctahedralPadding: Blitter.BlitOctahedralWithPadding(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
-                        case BlitType.OctahedralPaddingMultiply: Blitter.BlitOctahedralWithPaddingMultiply(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
-                    }
+                    case BlitType.Padding: Blitter.BlitQuadWithPadding(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
+                    case BlitType.PaddingMultiply: Blitter.BlitQuadWithPaddingMultiply(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
+                    case BlitType.OctahedralPadding: Blitter.BlitOctahedralWithPadding(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
+                    case BlitType.OctahedralPaddingMultiply: Blitter.BlitOctahedralWithPaddingMultiply(cmd, texture, textureSize, sourceScaleOffset, scaleOffset, mipLevel, bilinear, pixelPadding); break;
                 }
             }
         }
@@ -218,7 +211,6 @@ namespace UnityEngine.Rendering
             // This atlas only supports square textures
             if (height != width)
             {
-                Debug.LogError("Can't place " + texture + " in the atlas " + m_AtlasTexture.name + ": Only squared texture are allowed in this atlas.");
                 return false;
             }
 

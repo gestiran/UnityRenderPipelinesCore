@@ -65,7 +65,6 @@ namespace UnityEngine.Experimental.Rendering
 
             if (desc.passName != ShaderTagId.none)
             {
-                Debug.Assert(desc.passNames == null);
                 drawSettings.SetShaderPassName(0, desc.passName);
             }
             else

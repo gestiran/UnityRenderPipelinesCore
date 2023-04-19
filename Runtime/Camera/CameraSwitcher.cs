@@ -2,9 +2,6 @@ using UnityEngine;
 
 namespace UnityEngine.Rendering
 {
-    /// <summary>
-    /// Utility component allowing users to setup many different static camera and cycle through their positions using the Debug Window.
-    /// </summary>
     [CoreRPHelpURLAttribute("Camera-Switcher")]
     public class CameraSwitcher : MonoBehaviour
     {
@@ -34,7 +31,6 @@ namespace UnityEngine.Rendering
 
             if (m_OriginalCamera == null)
             {
-                Debug.LogError("Camera Switcher needs a Camera component attached");
                 return;
             }
 

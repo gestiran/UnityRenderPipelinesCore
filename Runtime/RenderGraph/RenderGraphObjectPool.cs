@@ -95,8 +95,7 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
         {
             foreach (var arrayDesc in m_AllocatedArrays)
             {
-                bool result = m_ArrayPool.TryGetValue(arrayDesc.Item2, out var stack);
-                Debug.Assert(result, "Correct stack type should always be allocated.");
+                m_ArrayPool.TryGetValue(arrayDesc.Item2, out var stack);
                 stack.Push(arrayDesc.Item1);
             }
 

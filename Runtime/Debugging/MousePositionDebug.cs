@@ -1,9 +1,3 @@
-#if ENABLE_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM_PACKAGE
-#define USE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-#endif
-
 using UnityEditor;
 
 namespace UnityEngine.Rendering
@@ -62,18 +56,10 @@ namespace UnityEngine.Rendering
                 bool    rightClickPressed = false;
                 bool    endKeyPressed = false;
 
-#if USE_INPUT_SYSTEM
-                mousePosition = Pointer.current != null ? Pointer.current.position.ReadValue() : new Vector2(-1, -1);
-                if (Mouse.current != null)
-                    rightClickPressed = Mouse.current.rightButton.isPressed;
-                if (Keyboard.current != null)
-                    endKeyPressed = Keyboard.current.endKey.isPressed;
-#else
                 mousePosition = Input.mousePosition;
                 rightClickPressed = Input.GetMouseButton(1);
                 endKeyPressed = Input.GetKey(KeyCode.End);
-#endif
-
+                
                 if (mousePosition.x < 0
                     || mousePosition.y < 0
                     || mousePosition.x > Screen.width
@@ -179,11 +165,7 @@ namespace UnityEngine.Rendering
 
         Vector2 GetInputMousePosition()
         {
-#if USE_INPUT_SYSTEM
-            return Pointer.current != null ? Pointer.current.position.ReadValue() : new Vector2(-1, -1);
-#else
             return Input.mousePosition;
-#endif
         }
 
         /// <summary>

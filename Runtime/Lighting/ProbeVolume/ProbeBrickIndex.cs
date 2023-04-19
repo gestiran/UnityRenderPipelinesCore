@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics;
 using System.Collections.Generic;
-using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using System.Collections;
 using Chunk = UnityEngine.Experimental.Rendering.ProbeBrickPool.BrickChunkAlloc;
@@ -93,7 +92,6 @@ namespace UnityEngine.Experimental.Rendering
 
         internal ProbeBrickIndex(ProbeVolumeTextureMemoryBudget memoryBudget)
         {
-            Profiler.BeginSample("Create ProbeBrickIndex");
             m_CenterRS = new Vector3Int(0, 0, 0);
 
             m_VoxelToBricks = new Dictionary<Vector3Int, List<VoxelMeta>>();
@@ -112,7 +110,6 @@ namespace UnityEngine.Experimental.Rendering
 
             // Should be done by a compute shader
             Clear();
-            Profiler.EndSample();
         }
 
         internal void UploadIndexData()
@@ -123,8 +120,6 @@ namespace UnityEngine.Experimental.Rendering
 
         internal void Clear()
         {
-            Profiler.BeginSample("Clear Index");
-
             for (int i = 0; i < m_PhysicalIndexBufferData.Length; ++i)
                 m_PhysicalIndexBufferData[i] = -1;
 
@@ -134,7 +129,6 @@ namespace UnityEngine.Experimental.Rendering
 
             m_VoxelToBricks.Clear();
             m_BricksToVoxels.Clear();
-            Profiler.EndSample();
         }
 
         void MapBrickToVoxels(ProbeBrickIndex.Brick brick, HashSet<Vector3Int> voxels)
@@ -240,7 +234,6 @@ namespace UnityEngine.Experimental.Rendering
             cellUpdateInfo.numberOfChunks = numberOfChunks;
             for (int i = firstValidChunk; i < (firstValidChunk + numberOfChunks); ++i)
             {
-                Debug.Assert(!m_IndexChunks[i]);
                 m_IndexChunks[i] = true;
             }
 
@@ -251,7 +244,6 @@ namespace UnityEngine.Experimental.Rendering
 
         public void AddBricks(RegId id, List<Brick> bricks, List<Chunk> allocations, int allocationSize, int poolWidth, int poolHeight, CellIndexUpdateInfo cellInfo)
         {
-            Debug.Assert(bricks.Count <= ushort.MaxValue, "Cannot add more than 65K bricks per RegId.");
             int largest_cell = ProbeReferenceVolume.CellSize(kMaxSubdivisionLevels);
 
             // create a new copy
@@ -271,7 +263,6 @@ namespace UnityEngine.Experimental.Rendering
                     Brick brick = bricks[brick_idx];
 
                     int cellSize = ProbeReferenceVolume.CellSize(brick.subdivisionLevel);
-                    Debug.Assert(cellSize <= largest_cell, "Cell sizes are not correctly sorted.");
                     largest_cell = Mathf.Min(largest_cell, cellSize);
 
                     MapBrickToVoxels(brick, bm.voxels);
@@ -374,26 +365,14 @@ namespace UnityEngine.Experimental.Rendering
 
             brickMin /= ProbeReferenceVolume.CellSize(cellInfo.minSubdivInCell);
             brickMax /= ProbeReferenceVolume.CellSize(cellInfo.minSubdivInCell);
-
-            // Verify we are actually in local space now.
-            int maxCellSizeInOutputRes = ProbeReferenceVolume.CellSize(ProbeReferenceVolume.instance.GetMaxSubdivision() - 1 - cellInfo.minSubdivInCell);
-            Debug.Assert(brickMin.x >= 0 && brickMin.y >= 0 && brickMin.z >= 0 && brickMax.x >= 0 && brickMax.y >= 0 && brickMax.z >= 0);
-            Debug.Assert(brickMin.x < maxCellSizeInOutputRes && brickMin.y < maxCellSizeInOutputRes && brickMin.z < maxCellSizeInOutputRes && brickMax.x <= maxCellSizeInOutputRes && brickMax.y <= maxCellSizeInOutputRes && brickMax.z <= maxCellSizeInOutputRes);
-
-            // We are now in the right resolution, but still not considering the valid area, so we need to still normalize against that.
-            // To do so first let's move back the limits to the desired resolution
+            
             var cellMinIndex = cellInfo.minValidBrickIndexForCellAtMaxRes / ProbeReferenceVolume.CellSize(cellInfo.minSubdivInCell);
             var cellMaxIndex = cellInfo.maxValidBrickIndexForCellAtMaxResPlusOne / ProbeReferenceVolume.CellSize(cellInfo.minSubdivInCell);
 
             // Then perform the rescale of the local indices for min and max.
             brickMin -= cellMinIndex;
             brickMax -= cellMinIndex;
-
-            // In theory now we are all positive since we clipped during the voxel stage. Keeping assert for debugging, but can go later.
-            Debug.Assert(brickMin.x >= 0 && brickMin.y >= 0 && brickMin.z >= 0 && brickMax.x >= 0 && brickMax.y >= 0 && brickMax.z >= 0);
-
-
-            // Compute the span of the valid part
+            
             var size = (cellMaxIndex - cellMinIndex);
 
             // Loop through all touched indices

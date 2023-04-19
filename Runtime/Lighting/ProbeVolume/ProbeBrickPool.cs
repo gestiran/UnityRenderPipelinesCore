@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Collections.Generic;
 using UnityEngine.Rendering;
-using UnityEngine.Profiling;
 
 namespace UnityEngine.Experimental.Rendering
 {
@@ -73,7 +72,6 @@ namespace UnityEngine.Experimental.Rendering
 
         internal ProbeBrickPool(int allocationSize, ProbeVolumeTextureMemoryBudget memoryBudget, ProbeVolumeSHBands shBands)
         {
-            Profiler.BeginSample("Create ProbeBrickPool");
             m_NextFreeChunk.x = m_NextFreeChunk.y = m_NextFreeChunk.z = 0;
 
             m_AllocationSize = allocationSize;
@@ -87,8 +85,6 @@ namespace UnityEngine.Experimental.Rendering
             int estimatedCost = 0;
             m_Pool = CreateDataLocation(width * height * depth, false, shBands, out estimatedCost);
             estimatedVMemCost = estimatedCost;
-
-            Profiler.EndSample();
         }
 
         internal void EnsureTextureValidity()
@@ -140,7 +136,6 @@ namespace UnityEngine.Experimental.Rendering
             {
                 if (m_NextFreeChunk.z >= m_Pool.depth)
                 {
-                    Debug.Assert(false, "Cannot allocate more brick chunks, probevolume brick pool is full.");
                     break; // failure case, pool is full
                 }
 
@@ -168,8 +163,6 @@ namespace UnityEngine.Experimental.Rendering
 
         internal void Update(DataLocation source, List<BrickChunkAlloc> srcLocations, List<BrickChunkAlloc> dstLocations, ProbeVolumeSHBands bands)
         {
-            Debug.Assert(srcLocations.Count == dstLocations.Count);
-
             for (int i = 0; i < srcLocations.Count; i++)
             {
                 BrickChunkAlloc src = srcLocations[i];
@@ -196,9 +189,6 @@ namespace UnityEngine.Experimental.Rendering
 
         static Vector3Int ProbeCountToDataLocSize(int numProbes)
         {
-            Debug.Assert(numProbes != 0);
-            Debug.Assert(numProbes % kBrickProbeCountTotal == 0);
-
             int numBricks = numProbes / kBrickProbeCountTotal;
             int poolWidth = kMaxPoolWidth / kBrickProbeCountPerDim;
 
@@ -374,7 +364,6 @@ namespace UnityEngine.Experimental.Rendering
                     {
                         by = 0;
                         bz += kBrickProbeCountPerDim;
-                        Debug.Assert(bz < loc.depth || brickIdx == shl2.Length - kBrickProbeCountTotal, "Location depth exceeds data texture.");
                     }
                 }
             }

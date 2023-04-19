@@ -351,7 +351,6 @@ namespace UnityEngine.Rendering
                         {
                             if (((Container)children[i]).children.Count != m_ColumnCount)
                             {
-                                Debug.LogError("All rows must have the same number of children.");
                                 return null;
                             }
                         }
@@ -405,7 +404,6 @@ namespace UnityEngine.Rendering
                         {
                             if (((Container)children[i]).children.Count != columnCount)
                             {
-                                Debug.LogError("All rows must have the same number of children.");
                                 return null;
                             }
                         }

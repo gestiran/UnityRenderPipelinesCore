@@ -268,10 +268,7 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
         {
             var textureResources = m_RenderGraphResources[(int)RenderGraphResourceType.Texture];
             int sharedTextureCount = textureResources.sharedResourcesCount;
-
-            Debug.Assert(textureResources.resourceArray.size <= sharedTextureCount);
-
-            // try to find an available slot.
+            
             TextureResource texResource = null;
             int textureIndex = -1;
 
@@ -464,12 +461,9 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
             if (resource.desc.clearBuffer || m_RenderGraphDebug.clearRenderTargetsAtCreation)
             {
                 bool debugClear = m_RenderGraphDebug.clearRenderTargetsAtCreation && !resource.desc.clearBuffer;
-                using (new ProfilingScope(rgContext.cmd, ProfilingSampler.Get(debugClear ? RenderGraphProfileId.RenderGraphClearDebug : RenderGraphProfileId.RenderGraphClear)))
-                {
-                    var clearFlag = resource.desc.depthBufferBits != DepthBits.None ? ClearFlag.DepthStencil : ClearFlag.Color;
-                    var clearColor = debugClear ? Color.magenta : resource.desc.clearColor;
-                    CoreUtils.SetRenderTarget(rgContext.cmd, resource.graphicsResource, clearFlag, clearColor);
-                }
+                var clearFlag = resource.desc.depthBufferBits != DepthBits.None ? ClearFlag.DepthStencil : ClearFlag.Color;
+                var clearColor = debugClear ? Color.magenta : resource.desc.clearColor;
+                CoreUtils.SetRenderTarget(rgContext.cmd, resource.graphicsResource, clearFlag, clearColor);
             }
         }
 
@@ -494,13 +488,9 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
         {
             var resource = res as TextureResource;
 
-            if (m_RenderGraphDebug.clearRenderTargetsAtRelease)
-            {
-                using (new ProfilingScope(rgContext.cmd, ProfilingSampler.Get(RenderGraphProfileId.RenderGraphClearDebug)))
-                {
-                    var clearFlag = resource.desc.depthBufferBits != DepthBits.None ? ClearFlag.DepthStencil : ClearFlag.Color;
-                    CoreUtils.SetRenderTarget(rgContext.cmd, resource.graphicsResource, clearFlag, Color.magenta);
-                }
+            if (m_RenderGraphDebug.clearRenderTargetsAtRelease) {
+                var clearFlag = resource.desc.depthBufferBits != DepthBits.None ? ClearFlag.DepthStencil : ClearFlag.Color;
+                CoreUtils.SetRenderTarget(rgContext.cmd, resource.graphicsResource, clearFlag, Color.magenta);
             }
         }
 
@@ -599,11 +589,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
                 m_RenderGraphResources[i].Cleanup();
 
             RTHandles.Release(m_CurrentBackbuffer);
-        }
-
-        internal void FlushLogs()
-        {
-            Debug.Log(m_ResourceLogger.GetAllLogs());
         }
 
         void LogResources()

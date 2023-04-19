@@ -1,11 +1,5 @@
-using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using Chunk = UnityEngine.Experimental.Rendering.ProbeBrickPool.BrickChunkAlloc;
-using RegId = UnityEngine.Experimental.Rendering.ProbeReferenceVolume.RegId;
-using Cell = UnityEngine.Experimental.Rendering.ProbeReferenceVolume.Cell;
 
 namespace UnityEngine.Experimental.Rendering
 {
@@ -92,8 +86,6 @@ namespace UnityEngine.Experimental.Rendering
         internal int GetFlatIdxForCell(Vector3Int cellPosition)
         {
             Vector3Int normalizedPos = cellPosition - m_CellMin;
-            Debug.Assert(normalizedPos.x >= 0 && normalizedPos.y >= 0 && normalizedPos.z >= 0);
-
             return GetFlatIndex(normalizedPos);
         }
 

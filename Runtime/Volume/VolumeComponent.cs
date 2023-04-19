@@ -166,13 +166,10 @@ namespace UnityEngine.Rendering
             FindParameters(this, fields);
             parameters = fields.AsReadOnly();
 
-
-            foreach (var parameter in parameters)
-            {
-                if (parameter != null)
-                    parameter.OnEnable();
-                else
-                    Debug.LogWarning("Volume Component " + GetType().Name + " contains a null parameter; please make sure all parameters are initialized to a default value. Until this is fixed the null parameters will not be considered by the system.");
+            for (int index = 0; index < parameters.Count; index++) {
+                if (parameters[index] != null) {
+                    parameters[index].OnEnable();
+                }
             }
         }
 

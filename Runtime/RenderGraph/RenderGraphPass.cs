@@ -17,7 +17,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
 
         public string name { get; protected set; }
         public int index { get; protected set; }
-        public ProfilingSampler customSampler { get; protected set; }
         public bool enableAsyncCompute { get; protected set; }
         public bool allowPassCulling { get; protected set; }
 
@@ -51,7 +50,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
         {
             name = "";
             index = -1;
-            customSampler = null;
             for (int i = 0; i < (int)RenderGraphResourceType.Count; ++i)
             {
                 resourceReadLists[i].Clear();
@@ -123,7 +121,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
 
         public void SetColorBuffer(TextureHandle resource, int index)
         {
-            Debug.Assert(index < RenderGraph.kMaxMRTCount && index >= 0);
             colorBufferMaxIndex = Math.Max(colorBufferMaxIndex, index);
             colorBuffers[index] = resource;
             AddResourceWrite(resource.handle);
@@ -151,13 +148,12 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
             GetExecuteDelegate<PassData>()(data, renderGraphContext);
         }
 
-        public void Initialize(int passIndex, PassData passData, string passName, ProfilingSampler sampler)
+        public void Initialize(int passIndex, PassData passData, string passName)
         {
             Clear();
             index = passIndex;
             data = passData;
             name = passName;
-            customSampler = sampler;
         }
 
         public override void Release(RenderGraphObjectPool pool)

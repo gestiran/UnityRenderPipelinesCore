@@ -90,12 +90,7 @@ namespace UnityEngine
 
                 if (checkedIndex == -1)
                     continue;
-
-                // There is a duplicate entry in PendingInputesToRegister.
-                // Debug.LogWarning($"Two entries with same name and kind are tryed to be added at same time. Only first occurence is kept. Name:{pendingEntry.name} Kind:{pendingEntry.kind}");
-
-                // Keep only first.
-                // Counting decreasingly will have no impact on index before pendingIndex. So we can safely remove it.
+                
                 s_PendingInputsToRegister.RemoveAt(pendingIndex);
             }
         }
@@ -111,11 +106,6 @@ namespace UnityEngine
                 if (checkedIndex == -1)
                     continue;
 
-                // There is a already a cached entry that correspond.
-                // Debug.LogWarning($"Another entry with same name and kind already exist. Skiping this one. Name:{newEntry.name} Kind:{newEntry.kind}");
-
-                // Keep only first.
-                // Counting decreasingly will have no impact on index before pendingIndex. So we can safely remove it.
                 s_PendingInputsToRegister.RemoveAt(newIndex);
             }
         }
@@ -158,15 +148,8 @@ namespace UnityEngine
 
         public static void RegisterInputs(List<InputManagerEntry> entries)
         {
-#if ENABLE_INPUT_SYSTEM && ENABLE_INPUT_SYSTEM_PACKAGE
-            Debug.LogWarning("Trying to add entry in the legacy InputManager but using InputSystem package. Skiping.");
-            return;
-#else
             s_PendingInputsToRegister.AddRange(entries);
-
-            //delay the call in order to do only one pass event if several different class register inputs
             EditorApplication.delayCall += DelayedRegisterInput;
-#endif
         }
     }
 #endif

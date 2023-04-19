@@ -110,8 +110,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
         // To work around this, we just copy/pasted the implementation in each final class...
         public override void CreatePooledGraphicsResource()
         {
-            Debug.Assert(m_Pool != null, "CreatePooledGraphicsResource should only be called for regular pooled resources");
-
             int hashCode = desc.GetHashCode();
 
             if (graphicsResource != null)

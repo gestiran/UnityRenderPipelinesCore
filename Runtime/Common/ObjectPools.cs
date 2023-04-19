@@ -95,13 +95,6 @@ namespace UnityEngine.Rendering
         /// <param name="element">Object to release.</param>
         public void Release(T element)
         {
-#if UNITY_EDITOR // keep heavy checks in editor
-            if (m_CollectionCheck && m_Stack.Count > 0)
-            {
-                if (m_Stack.Contains(element))
-                    Debug.LogError("Internal error. Trying to destroy object that is already released to pool.");
-            }
-#endif
             if (m_ActionOnRelease != null)
                 m_ActionOnRelease(element);
             m_Stack.Push(element);

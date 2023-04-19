@@ -96,16 +96,6 @@ namespace UnityEngine.Rendering
         /// <param name="height">Initial reference rendering height.</param>
         public void Initialize(int width, int height)
         {
-            if (m_AutoSizedRTs.Count != 0)
-            {
-                string leakingResources = "Unreleased RTHandles:";
-                foreach (var rt in m_AutoSizedRTs)
-                {
-                    leakingResources = string.Format("{0}\n    {1}", leakingResources, rt.name);
-                }
-                Debug.LogError(string.Format("RTHandle.Initialize should only be called once before allocating any Render Texture. This may be caused by an unreleased RTHandle resource.\n{0}\n", leakingResources));
-            }
-
             m_MaxWidths = width;
             m_MaxHeights = height;
 
@@ -507,7 +497,6 @@ namespace UnityEngine.Rendering
             bool enableMSAA = msaaSamples != MSAASamples.None;
             if (!enableMSAA && bindTextureMS == true)
             {
-                Debug.LogWarning("RTHandle allocated without MSAA but with bindMS set to true, forcing bindMS to false.");
                 bindTextureMS = false;
             }
 
@@ -766,14 +755,12 @@ namespace UnityEngine.Rendering
             // Here user made a mistake in setting up msaa/bindMS, hence the warning
             if (!enableMSAA && bindTextureMS == true)
             {
-                Debug.LogWarning("RTHandle allocated without MSAA but with bindMS set to true, forcing bindMS to false.");
                 bindTextureMS = false;
             }
 
             // MSAA Does not support random read/write.
             if (enableMSAA && (enableRandomWrite == true))
             {
-                Debug.LogWarning("RTHandle that is MSAA-enabled cannot allocate MSAA RT with 'enableRandomWrite = true'.");
                 enableRandomWrite = false;
             }
 
@@ -902,7 +889,6 @@ namespace UnityEngine.Rendering
 
         private static RTHandle Alloc(RTHandle tex)
         {
-            Debug.LogError("Allocation a RTHandle from another one is forbidden.");
             return null;
         }
 

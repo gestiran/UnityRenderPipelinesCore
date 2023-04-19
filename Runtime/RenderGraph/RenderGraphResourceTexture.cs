@@ -306,8 +306,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
 
         public override void CreatePooledGraphicsResource()
         {
-            Debug.Assert(m_Pool != null, "CreatePooledGraphicsResource should only be called for regular pooled resources");
-
             int hashCode = desc.GetHashCode();
 
             if (graphicsResource != null)

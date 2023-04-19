@@ -154,7 +154,6 @@ namespace UnityEngine.Rendering.UI
 
                 if (!m_PrefabsMap.TryGetValue(child.GetType(), out prefab))
                 {
-                    Debug.LogWarning("DebugUI widget doesn't have a prefab: " + child.GetType());
                     continue;
                 }
 
@@ -164,7 +163,6 @@ namespace UnityEngine.Rendering.UI
 
                 if (uiHandler == null)
                 {
-                    Debug.LogWarning("DebugUI prefab is missing a DebugUIHandler for: " + child.GetType());
                     continue;
                 }
 

@@ -34,7 +34,6 @@ namespace UnityEngine.Experimental.Rendering.RenderGraphModule
 
         internal ResourceHandle(int value, RenderGraphResourceType type, bool shared)
         {
-            Debug.Assert(value <= 0xFFFF);
             m_Value = ((uint)value & kIndexMask) | (shared ? s_SharedResourceValidBit : s_CurrentValidBit);
             this.type = type;
         }

@@ -34,8 +34,6 @@ namespace UnityEngine.Rendering
 
             public Int16 AtlasNodeCreate(Int16 parent)
             {
-                Debug.Assert((m_Next < m_Nodes.Length) || (m_FreelistHead != -1), "Error: AtlasNodePool: Out of memory. Please pre-allocate pool to larger capacity");
-
                 if (m_FreelistHead != -1)
                 {
                     Int16 freelistHeadNext = m_Nodes[m_FreelistHead].m_FreelistNext;
@@ -51,7 +49,6 @@ namespace UnityEngine.Rendering
 
             public void AtlasNodeFree(Int16 index)
             {
-                Debug.Assert(index >= 0 && index < m_Nodes.Length, "Error: AtlasNodeFree: index out of range.");
                 m_Nodes[index].m_FreelistNext = m_FreelistHead;
                 m_FreelistHead = index;
             }
@@ -112,8 +109,6 @@ namespace UnityEngine.Rendering
             {
                 if (Mathf.Min(width, height) < 1)
                 {
-                    // Degenerate allocation requested.
-                    Debug.Assert(false, "Error: Texture2DAtlasDynamic: Attempted to allocate a degenerate region. Please ensure width and height are >= 1");
                     return -1;
                 }
 
@@ -133,33 +128,14 @@ namespace UnityEngine.Rendering
                 if (IsOccupied()) { return -1; }
                 if (width > m_Rect.x || height > m_Rect.y) { return -1; }
 
-                // perform the split
-                Debug.Assert(m_LeftChild == -1);
-                Debug.Assert(m_RightChild == -1);
                 m_LeftChild = pool.AtlasNodeCreate(m_Self);
                 m_RightChild = pool.AtlasNodeCreate(m_Self);
-                // Debug.Log("m_LeftChild = " + m_LeftChild);
-                // Debug.Log("m_RightChild = " + m_RightChild);
-
-                Debug.Assert(m_LeftChild >= 0 && m_LeftChild < pool.m_Nodes.Length);
-                Debug.Assert(m_RightChild >= 0 && m_RightChild < pool.m_Nodes.Length);
-
-                // Debug.Log("Rect = {" + m_Rect.x + ", " + m_Rect.y + ", " + m_Rect.z + ", " + m_Rect.w + "}");
 
                 float deltaX = m_Rect.x - width;
                 float deltaY = m_Rect.y - height;
-                // Debug.Log("deltaX = " + deltaX);
-                // Debug.Log("deltaY = " + deltaY);
 
                 if (deltaX >= deltaY)
                 {
-                    // Debug.Log("Split horizontally");
-                    //  +--------+------+
-                    //  |        |      |
-                    //  |        |      |
-                    //  |        |      |
-                    //  |        |      |
-                    //  +--------+------+
                     pool.m_Nodes[m_LeftChild].m_Rect.x = width;
                     pool.m_Nodes[m_LeftChild].m_Rect.y = m_Rect.y;
                     pool.m_Nodes[m_LeftChild].m_Rect.z = m_Rect.z;
@@ -184,13 +160,6 @@ namespace UnityEngine.Rendering
                 }
                 else
                 {
-                    // Debug.Log("Split vertically.");
-                    //  +---------------+
-                    //  |               |
-                    //  |---------------|
-                    //  |               |
-                    //  |               |
-                    //  +---------------+
                     pool.m_Nodes[m_LeftChild].m_Rect.x = m_Rect.x;
                     pool.m_Nodes[m_LeftChild].m_Rect.y = height;
                     pool.m_Nodes[m_LeftChild].m_Rect.z = m_Rect.z;
@@ -256,7 +225,6 @@ namespace UnityEngine.Rendering
         {
             // In an evenly split binary tree, the nodeCount == leafNodeCount * 2
             int capacityNodes = capacityAllocations * 2;
-            Debug.Assert(capacityNodes < (1 << 16), "Error: AtlasAllocatorDynamic: Attempted to allocate a capacity of " + capacityNodes + ", which is greater than our 16-bit indices can support. Please request a capacity <=" + (1 << 16));
             m_Pool = new AtlasNodePool((Int16)capacityNodes);
 
             m_NodeFromID = new Dictionary<int, Int16>(capacityAllocations);
@@ -266,10 +234,6 @@ namespace UnityEngine.Rendering
             m_Pool.m_Nodes[m_Root].m_Rect.Set(width, height, 0, 0);
             m_Width = width;
             m_Height = height;
-
-            // string debug = "";
-            // DebugStringFromNode(ref debug, m_Root);
-            // Debug.Log("Allocating atlas = " + debug);
         }
 
         public bool Allocate(out Vector4 result, int key, int width, int height)
@@ -292,7 +256,6 @@ namespace UnityEngine.Rendering
         {
             if (m_NodeFromID.TryGetValue(key, out Int16 node))
             {
-                Debug.Assert(node >= 0 && node < m_Pool.m_Nodes.Length);
                 m_Pool.m_Nodes[node].ReleaseAndMerge(m_Pool);
                 m_NodeFromID.Remove(key);
                 return;
@@ -469,11 +432,8 @@ namespace UnityEngine.Rendering
         {
             isUploadNeeded = false;
             if (m_AllocationCache.TryGetValue(key, out scaleOffset)) { return true; }
-
-            // Debug.Log("EnsureTextureSlot Before = " + m_AtlasAllocator.DebugStringFromRoot());
             if (!m_AtlasAllocator.Allocate(out scaleOffset, key, width, height)) { return false; }
-            // Debug.Log("EnsureTextureSlot After = " + m_AtlasAllocator.DebugStringFromRoot());
-
+            
             isUploadNeeded = true;
             scaleOffset.Scale(new Vector4(1.0f / m_Width, 1.0f / m_Height, 1.0f / m_Width, 1.0f / m_Height));
             m_AllocationCache.Add(key, scaleOffset);

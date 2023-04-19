@@ -32,8 +32,6 @@ namespace UnityEngine.Experimental.Rendering
         [SerializeField] internal ProbeVolumeSHBands bands;
 
         [SerializeField] string m_AssetFullPath = "UNINITIALIZED!";
-
-        // Profile info
         [SerializeField] internal int cellSizeInBricks;
         [SerializeField] internal float minDistanceBetweenProbes;
         [SerializeField] internal int simplificationLevels;

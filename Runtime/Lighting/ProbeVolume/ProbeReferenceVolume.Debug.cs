@@ -92,8 +92,6 @@ namespace UnityEngine.Experimental.Rendering
             m_DebugMaterial = CoreUtils.CreateEngineMaterial(debugProbeShader);
             m_DebugMaterial.enableInstancing = true;
 
-            // Hard-coded colors for now.
-            Debug.Assert(ProbeBrickIndex.kMaxSubdivisionLevels == 7); // Update list if this changes.
             subdivisionDebugColors[0] = new Color(1.0f, 0.0f, 0.0f);
             subdivisionDebugColors[1] = new Color(0.0f, 1.0f, 0.0f);
             subdivisionDebugColors[2] = new Color(0.0f, 0.0f, 1.0f);

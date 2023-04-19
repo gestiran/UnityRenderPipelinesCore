@@ -433,9 +433,6 @@ namespace UnityEngine.Rendering
         /// <param name="overrideInstanceID">Override texture instance ID.</param>
         public virtual void BlitCubeTexture2D(CommandBuffer cmd, Vector4 scaleOffset, Texture texture, bool blitMips = true, int overrideInstanceID = -1)
         {
-            Debug.Assert(texture.dimension == TextureDimension.Cube);
-
-            // This atlas only support 2D texture so we map Cube into set of 2D textures
             if (texture.dimension == TextureDimension.Cube)
             {
                 BlitType blitType = BlitType.CubeTo2DOctahedral;

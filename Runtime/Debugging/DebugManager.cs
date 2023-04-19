@@ -272,7 +272,6 @@ namespace UnityEngine.Rendering
             var valueWidget = widget as DebugUI.Value;
             if (valueWidget == null)
             {
-                Debug.Log("Only DebugUI.Value items can be made persistent.");
                 return;
             }
 
